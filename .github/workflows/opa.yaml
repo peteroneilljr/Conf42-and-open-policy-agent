@@ -1,0 +1,42 @@
+name: OPA Validate Terraform Manifest Files
+on: [push]
+jobs:
+  OPA-Validate-Terraform:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: hashicorp/setup-terraform@v2
+    - uses: open-policy-agent/setup-opa@v1
+      with:
+        version: latest
+
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform plan --out tfplan.binary
+      continue-on-error: true
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Convert TF Plan to JSON
+      id: convert
+      run: terraform show -json tfplan.binary > tfplan.json
+
+    - name: OPA Authorize Changes 
+      run: opa eval --fail-defined --format raw --input tfplan.json --data policy/ 'data.terraform.analysis.authz = false'
