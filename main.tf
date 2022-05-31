@@ -10,13 +10,29 @@ provider "aws" {
   region = "us-west-2"
 }
 
-resource "aws_instance" "web" {
-  instance_type = "t3.micro"
-  ami           = "ami-09b4b74c"
+module "ec2_instance" {
+  source  = "terraform-aws-modules/ec2-instance/aws"
+  version = "~> 3.0"
+
+  # for_each = toset(["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "11", "12", "13", "14", "15"])
+  for_each = toset(["one", "two", "three"])
+  name = "instance-${each.key}"
+
+  ami                    = "ami-ebd02392"
+  instance_type          = "t3.micro"
+  key_name               = "user1"
+  monitoring             = true
+  vpc_security_group_ids = ["sg-12345678"]
+  subnet_id              = "subnet-eddcdzz4"
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
 }
 
 resource "aws_autoscaling_group" "my_asg" {
-  availability_zones        = ["us-west-1a"]
+  availability_zones        = ["us-west-2a"]
   name                      = "my_asg"
   max_size                  = 5
   min_size                  = 1
