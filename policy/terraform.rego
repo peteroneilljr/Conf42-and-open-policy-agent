@@ -11,12 +11,11 @@ blast_radius := 30
 
 # weights assigned for each operation on each resource-type
 weights := {
-    "aws_autoscaling_group": {"delete": 100, "create": 10, "modify": 1},
     "aws_instance": {"delete": 10, "create": 2, "modify": 1}
 }
 
 # Consider exactly these resource types in calculations
-resource_types := {"aws_autoscaling_group", "aws_instance", "aws_iam", "aws_launch_configuration"}
+resource_types := {"aws_instance", "aws_iam"}
 
 #########
 # Policy
@@ -24,6 +23,7 @@ resource_types := {"aws_autoscaling_group", "aws_instance", "aws_iam", "aws_laun
 
 # Authorization holds if score for the plan is acceptable and no changes are made to IAM
 default authz = false
+
 authz {
     score < blast_radius
     not touches_iam
