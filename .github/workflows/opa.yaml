@@ -39,4 +39,4 @@ jobs:
       run: terraform show -json tfplan.binary > tfplan.json
 
     - name: OPA Authorize Changes 
-      run: opa eval --fail-defined --format raw --input tfplan.json --data policy/ 'data.terraform.analysis.authz == false'
+      run: opa eval --fail-defined --format raw --input tfplan.json --data policy/ 'data.terraform.analysis.authz = false'
